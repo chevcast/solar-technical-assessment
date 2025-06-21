@@ -1,5 +1,6 @@
 <script lang="ts">
 	import GoogleMap from "$lib/components/GoogleMap.svelte";
+	import Loader from "$lib/components/Loader.svelte";
 	import { onMount, untrack } from "svelte";
 	import { slide } from "svelte/transition";
 
@@ -11,10 +12,11 @@
 		azimuth: number;
 	}>();
 	let offsetAngle = $state<number>(0);
+	let offsetDirty = $state(false);
+	let coordsDirty = $state(false);
 
 	$effect(() => {
 		if (latLng) {
-			optimalValues = undefined;
 			fetch(`/api/optimal-tilt`, {
 				method: "POST",
 				headers: {
@@ -23,18 +25,34 @@
 				body: JSON.stringify({
 					lat: latLng.lat,
 					lng: latLng.lng,
-					offsetAngle: untrack(() => offsetAngle)
+					offsetAngle
 				})
 			})
 				.then((response) => response.json())
 				.then((data) => {
 					optimalValues = data;
+					offsetDirty = false;
+					coordsDirty = false;
 				})
 				.catch((error) => {
 					console.error(error);
 				});
 		}
 	});
+
+	let offsetKeypressTimeout: NodeJS.Timeout | null = null;
+	const handleOffsetKeypress = (event: KeyboardEvent) => {
+		offsetDirty = true;
+		const offsetInput = event.currentTarget as HTMLInputElement;
+		if (offsetKeypressTimeout) clearTimeout(offsetKeypressTimeout);
+		if (event.key === "Enter") {
+			offsetAngle = offsetInput.value ? parseFloat(offsetInput.value) : 0;
+		} else {
+			offsetKeypressTimeout = setTimeout(() => {
+				offsetAngle = offsetInput.value ? parseFloat(offsetInput.value) : 0;
+			}, 750);
+		}
+	};
 
 	const setCoords = () => {
 		if (!lat || !lng) throw new Error("setCoords was called without valid lat or lng");
@@ -44,13 +62,14 @@
 		};
 	};
 
-	let keyPressTimeout: NodeJS.Timeout | null = null;
-	const handleKeyPress = (event: KeyboardEvent) => {
-		if (keyPressTimeout) clearTimeout(keyPressTimeout);
+	let coordsKeypressTimeout: NodeJS.Timeout | null = null;
+	const handleCoordsKeypress = (event: KeyboardEvent) => {
+		coordsDirty = true;
+		if (coordsKeypressTimeout) clearTimeout(coordsKeypressTimeout);
 		if (event.key === "Enter") {
 			setCoords();
 		} else {
-			keyPressTimeout = setTimeout(() => {
+			coordsKeypressTimeout = setTimeout(() => {
 				setCoords();
 			}, 2000);
 		}
@@ -84,23 +103,32 @@
 		<label for="latInput" aria-label="Latitude">Lat</label>
 		<input
 			id="latInput"
-			onkeypress={handleKeyPress}
+			onkeypress={handleCoordsKeypress}
 			bind:value={lat}
 			type="text"
 			placeholder="latitude"
-			class="mr-4 ml-1 w-30 rounded-lg bg-white px-2 py-1 text-sky-950 shadow shadow-sky-950"
+			class={[
+				"mr-4 ml-1 w-30 rounded-lg bg-white px-2 py-1 text-sky-950 shadow shadow-sky-950",
+				coordsDirty ? "bg-yellow-100" : "bg-white"
+			]}
 		/>
 		<label for="lngInput" aria-label="Longitude">Lng</label>
 		<input
 			id="lngInput"
-			onkeypress={handleKeyPress}
+			onkeypress={handleCoordsKeypress}
 			bind:value={lng}
 			type="text"
 			placeholder="longitude"
-			class="mr-4 ml-1 w-30 rounded-lg bg-white px-2 py-1 text-sky-950 shadow shadow-sky-950"
+			class={[
+				"mr-2 ml-1 w-30 rounded-lg bg-white px-2 py-1 text-sky-950 shadow shadow-sky-950",
+				coordsDirty ? "bg-yellow-100" : "bg-white"
+			]}
 		/>
+		{#if coordsDirty}
+			<Loader class="size-8 text-yellow-100" />
+		{/if}
 	</div>
-	{#if optimalValues}
+	{#if optimalValues && !coordsDirty}
 		<div
 			transition:slide={{ duration: 300 }}
 			class="z-5 bg-sky-700 p-4 text-xl text-white shadow-lg shadow-sky-950 md:absolute md:top-30 md:right-15 md:w-1/3 md:rounded-2xl md:border-2 md:border-sky-300"
@@ -112,9 +140,16 @@
 				>
 				<input
 					id="offsetInput"
-					class="w-15 rounded-lg bg-white px-2 py-1 text-center text-sky-950 shadow shadow-sky-950"
-					bind:value={offsetAngle}
+					class={[
+						"mr-2 w-15 rounded-lg px-2 py-1 text-center text-sky-950 shadow shadow-sky-950",
+						offsetDirty ? "bg-yellow-100" : "bg-white"
+					]}
+					value={offsetAngle}
+					onkeypress={handleOffsetKeypress}
 				/>
+				{#if offsetDirty}
+					<Loader class="size-8 text-yellow-100" />
+				{/if}
 			</div>
 			<div class="mb-4 flex items-center">
 				<div class="mr-4 w-30 text-right">Pitch</div>
