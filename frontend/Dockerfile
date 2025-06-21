@@ -4,13 +4,13 @@
 FROM oven/bun:alpine AS builder
 WORKDIR /app
 
-COPY ./package.json ./bun.lock   ./
+COPY ./frontend/package.json ./frontend/bun.lock   ./
 
 RUN bun install --frozen-lockfile
 
 COPY ./frontend   ./frontend
 
-WORKDIR /app/fontend
+WORKDIR /app/frontend
 RUN bun run build
 
 

@@ -1,13 +1,15 @@
 test-results
 node_modules
 
+.env
+
 # Output
 .output
 .vercel
 .netlify
 .wrangler
-/.svelte-kit
-/build
+.svelte-kit
+build
 
 # OS
 .DS_Store
