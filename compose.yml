@@ -9,7 +9,7 @@ services:
       - path: ./frontend/.env
         required: true
     environment:
-      - PUBLIC_API_URL=http://backend:8000/api
+      - API_URL=http://backend:8000
 
   backend:
     build:
@@ -18,7 +18,7 @@ services:
     ports:
       - 8000:8000
     env_file:
-      - path: ./nucleus/.env
+      - path: ./backend/.env
         required: true
 
   # For future caching of calls to our

@@ -1,10 +1,7 @@
 <script lang="ts">
 	import GoogleMap from "$lib/components/GoogleMap.svelte";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import { slide } from "svelte/transition";
-	import { env } from "$env/dynamic/public";
-
-	const apiUrl = env.PUBLIC_API_URL!;
 
 	let latLng = $state<google.maps.LatLngLiteral>();
 	let lat = $derived(latLng?.lat.toFixed(5));
@@ -18,7 +15,7 @@
 	$effect(() => {
 		if (latLng) {
 			optimalValues = undefined;
-			fetch(`${apiUrl}/optimal-tilt`, {
+			fetch(`/api/optimal-tilt`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
@@ -26,7 +23,7 @@
 				body: JSON.stringify({
 					lat: latLng.lat,
 					lng: latLng.lng,
-					offsetAngle
+					offsetAngle: untrack(() => offsetAngle)
 				})
 			})
 				.then((response) => response.json())
