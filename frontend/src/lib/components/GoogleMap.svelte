@@ -2,12 +2,57 @@
 	import { onMount } from "svelte";
 	import { googleLoader } from "$lib/utils/googleLoader";
 
-	let { latLng = $bindable<google.maps.LatLng>(), ...props } = $props();
+	let { latLng = $bindable<google.maps.LatLng>(), azimuth = 0, ...props } = $props();
 
 	let mapDiv: HTMLDivElement;
 
 	let marker = $state<google.maps.marker.AdvancedMarkerElement>();
+	let direction = $state<google.maps.Polyline>();
 	let map = $state<google.maps.Map>();
+
+	const destPoint = (lat: number, lng: number, az: number, d = 100) => {
+		const R = 6371000;
+		const theta = (az * Math.PI) / 180;
+		const delta = d / R;
+		const phi1 = (lat * Math.PI) / 180;
+		const lambda1 = (lng * Math.PI) / 180;
+		const phi2 = Math.asin(
+			Math.sin(phi1) * Math.cos(delta) + Math.cos(phi1) * Math.sin(delta) * Math.cos(theta)
+		);
+		const lambda2 =
+			lambda1 +
+			Math.atan2(
+				Math.sin(theta) * Math.sin(delta) * Math.cos(phi1),
+				Math.cos(delta) - Math.sin(phi1) * Math.sin(phi2)
+			);
+		return { lat: (phi2 * 180) / Math.PI, lng: (lambda2 * 180) / Math.PI };
+	};
+
+	const updatePolyline = () => {
+		if (!map || !latLng || azimuth === undefined) return;
+		const end = destPoint(latLng.lat, latLng.lng, azimuth, 100);
+		const path = [latLng, end];
+		if (direction) {
+			direction.setPath(path);
+		} else {
+			direction = new google.maps.Polyline({
+				map,
+				path,
+				strokeColor: "#fbbc05",
+				strokeOpacity: 0.9,
+				strokeWeight: 3,
+				icons: [
+					{
+						icon: {
+							path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+							scale: 3
+						},
+						offset: "100%"
+					}
+				]
+			});
+		}
+	};
 
 	const setMarker = async (position: google.maps.LatLng) => {
 		if (!map) throw new Error("Map is not initialized");
@@ -26,6 +71,7 @@
 			map.setZoom(20);
 		}
 		map.panTo(latLng);
+		updatePolyline();
 	};
 
 	$effect(() => {
@@ -35,24 +81,24 @@
 		}
 	});
 
+	$effect(() => {
+		updatePolyline();
+	});
+
 	const initMap = async () => {
 		const { Map } = (await google.maps.importLibrary("maps")) as google.maps.MapsLibrary;
-
 		const map = new Map(mapDiv, {
 			clickableIcons: false,
-			center: latLng, // Default: SF
+			center: latLng,
 			zoom: 20,
 			mapId: crypto.randomUUID(),
 			mapTypeId: "satellite",
 			tilt: 0
 		});
-
 		map.addListener("click", (event: google.maps.MapMouseEvent) => {
-			// console.log("Clicked coordinates:", event.latLng?.toJSON());
 			const position = event.latLng!;
 			setMarker(position);
 		});
-
 		return map;
 	};
 

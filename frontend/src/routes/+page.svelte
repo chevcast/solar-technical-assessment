@@ -164,6 +164,6 @@
 		</div>
 	{/if}
 	<div class="flex-1">
-		<GoogleMap bind:latLng />
+		<GoogleMap bind:latLng azimuth={optimalValues?.azimuth} />
 	</div>
 </div>
