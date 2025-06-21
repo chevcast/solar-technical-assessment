@@ -1,0 +1,40 @@
+namespace: solar
+
+image:
+  repository: solaracr.azurecr.io   # change to your registry
+  tag: latest
+  pullPolicy: Always
+
+replicaCount:
+  backend: 2
+  frontend: 2
+
+backend:
+  service:
+    type: ClusterIP
+    port: 8000
+  env:
+    DJANGO_DEBUG: "True"
+    CORS_ALLOW_ALL_ORIGINS: "True"
+  secret:
+    DJANGO_SECRET_KEY: "replace-me"
+
+frontend:
+  service:
+    type: ClusterIP
+    port: 3000
+  env:
+    API_URL: "http://backend:8000"
+  secret:
+    PUBLIC_GOOGLE_MAPS_API_KEY: "replace-me"
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: solartilt.com
+      paths:
+        - /
+  tls:
+    enabled: true
+    issuer: letsencrypt-prod
