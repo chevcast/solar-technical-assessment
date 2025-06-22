@@ -1,5 +1,7 @@
 # 🌞 Solar Technical Assessment
 
+![screenshot](./screenshot.png)
+
 ## Setup
 
 1. Run the following commands to clone the repository, copy the environment variable files, and start the application using Docker Compose:
