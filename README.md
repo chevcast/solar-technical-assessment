@@ -56,12 +56,12 @@ I chose to use `pvlib` because it is actively developed and provides a wide sele
 
 ## Modeling Logic
 
-1. Create a full-year sunshine timetable. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L22-L30))
+1. Create a full-year sunshine timetable. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L40-L48))
 
    - Build a pandas time series that covers every hour of the current calendar year in UTC.
    - For each timestamp we compute the extra-terrestrial DNI (soalr energy present just outside the atmosphere)
 
-2. Describe the location. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L32-L41))
+2. Describe the location. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L50-L59))
 
    - Generate zenith and azimuth angles for the location at each timestamp. (where the sun *is*)
    - Get the expected irradiance on a clear day, split into:
@@ -69,17 +69,17 @@ I chose to use `pvlib` because it is actively developed and provides a wide sele
       - Diffuse Horizontal Irradiance (scattered light)
       - Global Horizontal Irradiance (total light on a horizontal surface)
 
-3. Search for the optimal fixed tilt. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L43-L63))
+3. Search for the optimal fixed tilt. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L61-L81))
 
    - The code sweeps surface tilts from latitude +/- 15 degrees in 1-degree steps.
    - For every candidate tilt we use the **Hay-Davies sky model** to convert dni/dhi/ghi values into **plane-of-array global irradiance** (the energy that would hit a surface tilted at the candidate angle).
    - Hourly POA is summed over the entire year and the tilt that yields the highest total is selected as the optimal tilt.
 
-4. Apply offset angle. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L65-L66))
+4. Apply offset angle. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L83-L84))
 
    If the roof is already pitched the user may provide that pitch as an offset angle that will be subtracted so that installers know the extra tilt they need to add with racking. This value is clamped between 0 and 90 degrees.
 
-5. Determine the optimal azimuth. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L68-L79))
+5. Determine the optimal azimuth. ([source](https://github.com/chevcast/solar-technical-assessment/blob/main/backend/webserver/views.py#L86-L97))
 
    - We build a 1-minute time grid around the spring equinox.
    - We then find the minute when the sun's zenith is at its lowest point (highest elevation) and use that as the optimal azimuth.
