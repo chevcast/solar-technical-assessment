@@ -33,10 +33,14 @@ def calculate_optimal_angles(request):
         solpos = location.get_solarposition(times)
         clearsky = location.get_clearsky(times)
 
-        dni = clearsky["dni"]
-        dhi = clearsky["dhi"]
-        ghi = clearsky["ghi"]
+        # Total direct sunlight hitting the panel
+        direct_normal_irradiance = clearsky["dni"]
+        # Diffuse atmosphere-scattered sunlight reflected onto panel
+        diffuse_horizontal_irradiance = clearsky["dhi"]
+        # Total sunlight hitting the panel, including direct and diffuse
+        global_horizontal_irradiance = clearsky["ghi"]
 
+        # Optimize tilt by maximizing plane-of-array irradiance
         tilt_span = np.arange(lat - 15.0, lat + 15.0, 1.0)
         best_tilt, best_energy = tilt_span[0], -np.inf
 
@@ -48,9 +52,9 @@ def calculate_optimal_angles(request):
                 else 0.0,  # south-facing north of equator
                 solar_zenith=solpos["zenith"],
                 solar_azimuth=solpos["azimuth"],
-                dni=dni,
-                ghi=ghi,
-                dhi=dhi,
+                dni=direct_normal_irradiance,
+                ghi=global_horizontal_irradiance,
+                dhi=diffuse_horizontal_irradiance,
                 dni_extra=dni_extra,
                 model="haydavies",
             )["poa_global"].sum()
@@ -73,6 +77,17 @@ def calculate_optimal_angles(request):
         solpos_day = pd.DataFrame(location.get_solarposition(day_minutes))
         noon_idx = solpos_day["zenith"].idxmin()
         azimuth = round(float(solpos_day.loc[noon_idx, "azimuth"]), 2)
+
+        # TODO: Allow specifying tilt calculation mode (seasonal or monthly averages)
+        # and accept a date parameter for specific calculations
+
+        # TODO: PV system simulation for energy output estimation
+
+        # TODO: Add terrain modeling using elevation DSM
+
+        # TODO: Also use DSM to calculate accurate obstacle shading throughout the year
+
+        # TODO: Cache data in Redis based on input parameters to avoid redundant future calculations
 
         return JsonResponse({"pitch": round(pitch, 2), "azimuth": azimuth})
 

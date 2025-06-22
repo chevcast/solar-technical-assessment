@@ -1,5 +1,6 @@
 import { env } from "$env/dynamic/public";
 
+// Dynamically load the Google Maps JavaScript API
 const googleLoader = async () => {
 	const apiKey = env.PUBLIC_GOOGLE_MAPS_API_KEY;
 

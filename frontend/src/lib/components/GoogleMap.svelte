@@ -2,15 +2,18 @@
 	import { onMount } from "svelte";
 	import { googleLoader } from "$lib/utils/googleLoader";
 
+	// Use two-way bindnig for latLng so this component and its parent can both react to changes.
 	let { latLng = $bindable<google.maps.LatLng>(), azimuth = 0, ...props } = $props();
 
 	let mapDiv: HTMLDivElement;
 
+	// Reative state for map objects.
 	let marker = $state<google.maps.marker.AdvancedMarkerElement>();
 	let direction = $state<google.maps.Polyline>();
 	let map = $state<google.maps.Map>();
 
-	const destPoint = (lat: number, lng: number, az: number, d = 100) => {
+	// Calculate the destination point given a starting point, azimuth, and distance.
+	const destPoint = (lat: number, lng: number, az: number, d = 50) => {
 		const R = 6371000;
 		const theta = (az * Math.PI) / 180;
 		const delta = d / R;
@@ -28,9 +31,10 @@
 		return { lat: (phi2 * 180) / Math.PI, lng: (lambda2 * 180) / Math.PI };
 	};
 
+	// Update the polyline on the map based on the current latLng and azimuth.
 	const updatePolyline = () => {
 		if (!map || !latLng || azimuth === undefined) return;
-		const end = destPoint(latLng.lat, latLng.lng, azimuth, 100);
+		const end = destPoint(latLng.lat, latLng.lng, azimuth);
 		const path = [latLng, end];
 		if (direction) {
 			direction.setPath(path);
@@ -54,6 +58,7 @@
 		}
 	};
 
+	// Set the marker on the map at the given position, updating the latLng state and zooming in if necessary.
 	const setMarker = async (position: google.maps.LatLng) => {
 		if (!map) throw new Error("Map is not initialized");
 		const { AdvancedMarkerElement } = (await google.maps.importLibrary(
@@ -74,6 +79,7 @@
 		updatePolyline();
 	};
 
+	// Reactively update the marker position when latLng changes.
 	$effect(() => {
 		if (latLng && map && window.google) {
 			const coords = new google.maps.LatLng(latLng);
@@ -81,10 +87,14 @@
 		}
 	});
 
+	// Reactively update the polyline when latLng or azimuth changes.
 	$effect(() => {
-		updatePolyline();
+		if (latLng) {
+			updatePolyline();
+		}
 	});
 
+	// Initialize the map with a random map ID and set up the click listener to place markers.
 	const initMap = async () => {
 		const { Map } = (await google.maps.importLibrary("maps")) as google.maps.MapsLibrary;
 		const map = new Map(mapDiv, {
@@ -102,6 +112,7 @@
 		return map;
 	};
 
+	// Load the Google Maps API and initialize the map when the component mounts.
 	onMount(async () => {
 		await googleLoader();
 		map = await initMap();

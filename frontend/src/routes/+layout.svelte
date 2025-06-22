@@ -3,6 +3,8 @@
 	import { page } from "$app/state";
 	let { children } = $props();
 	const {
+		// Default SEO configuration for the page
+		// Can be overridden by individual pages
 		seo = {
 			title: "Solar Technical Assessment",
 			description: "",

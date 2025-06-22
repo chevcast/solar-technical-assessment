@@ -1,20 +1,28 @@
 <script lang="ts">
 	import GoogleMap from "$lib/components/GoogleMap.svelte";
-	import Loader from "$lib/components/Loader.svelte";
-	import { onMount, untrack } from "svelte";
+	import LoadingIndicator from "$lib/components/LoadingIndicator.svelte";
+	import { onMount } from "svelte";
 	import { slide } from "svelte/transition";
 
+	// Two-way bound state for our latitude and longitude.
 	let latLng = $state<google.maps.LatLngLiteral>();
+	// Derived state for formatted latitude and longitude values.
 	let lat = $derived(latLng?.lat.toFixed(5));
 	let lng = $derived(latLng?.lng.toFixed(5));
+	// State to hold the optimal pitch and azimuth values.
 	let optimalValues = $state<{
 		pitch: number;
 		azimuth: number;
 	}>();
+	// State to hold the user-provided offset angle.
 	let offsetAngle = $state<number>(0);
+
+	// State to track if the offset or coordinates have been modified.
 	let offsetDirty = $state(false);
 	let coordsDirty = $state(false);
 
+	// Effect to fetch the optimal tilt values whenever latLng our
+	// offsetAngle changes.
 	$effect(() => {
 		if (latLng) {
 			fetch(`/api/optimal-tilt`, {
@@ -40,6 +48,7 @@
 		}
 	});
 
+	// Debounced timeout for offset keypress handling to void excessive API calls.
 	let offsetKeypressTimeout: NodeJS.Timeout | null = null;
 	const handleOffsetKeypress = (event: KeyboardEvent) => {
 		offsetDirty = true;
@@ -62,6 +71,7 @@
 		};
 	};
 
+	// Debounced timeout for offset keypress handling to void excessive API calls.
 	let coordsKeypressTimeout: NodeJS.Timeout | null = null;
 	const handleCoordsKeypress = (event: KeyboardEvent) => {
 		coordsDirty = true;
@@ -75,6 +85,8 @@
 		}
 	};
 
+	// On mount, attempt to get the user's current geolocation.
+	// This only works on localhost or over HTTPS.
 	onMount(() => {
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(
@@ -97,6 +109,7 @@
 </script>
 
 <div class="relative flex h-screen w-screen flex-col">
+	<!-- Toolbar header with latitude and longitude inputs -->
 	<div
 		class="z-10 flex w-full items-center justify-center bg-sky-700 p-4 text-xl text-white shadow-lg shadow-sky-950"
 	>
@@ -125,15 +138,17 @@
 			]}
 		/>
 		{#if coordsDirty}
-			<Loader class="size-8 text-yellow-100" />
+			<LoadingIndicator class="size-8 text-yellow-100" />
 		{/if}
 	</div>
+
+	<!-- Optimal panel mount display -->
 	{#if optimalValues && !coordsDirty}
 		<div
 			transition:slide={{ duration: 300 }}
 			class="z-5 bg-sky-700 p-4 text-xl text-white shadow-lg shadow-sky-950 md:absolute md:top-30 md:right-15 md:w-1/3 md:rounded-2xl md:border-2 md:border-sky-300"
 		>
-			<h1 class="mb-5 text-center text-lg font-bold md:text-xl">Optimal Panel Tilt</h1>
+			<h1 class="mb-5 text-center text-lg font-bold md:text-xl">Optimal Panel Mount</h1>
 			<div class="mb-5 flex items-center">
 				<label for="offsetInput" aria-label="Offset Angle" class="mr-4 w-30 text-right"
 					>Offset Angle</label
@@ -148,7 +163,7 @@
 					onkeypress={handleOffsetKeypress}
 				/>
 				{#if offsetDirty}
-					<Loader class="size-8 text-yellow-100" />
+					<LoadingIndicator class="size-8 text-yellow-100" />
 				{/if}
 			</div>
 			<div class="mb-4 flex items-center">
@@ -163,6 +178,8 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Google Map component with the current latLng and azimuth -->
 	<div class="flex-1">
 		<GoogleMap bind:latLng azimuth={optimalValues?.azimuth} />
 	</div>

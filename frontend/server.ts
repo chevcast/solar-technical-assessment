@@ -8,7 +8,6 @@ if (!API_URL) {
 	throw new Error("Missing API_URL in environment");
 }
 
-/* --- single http-proxy instance --- */
 const proxy = httpProxy.createProxyServer({
 	target: API_URL,
 	changeOrigin: true,
@@ -16,7 +15,6 @@ const proxy = httpProxy.createProxyServer({
 });
 proxy.on("error", (err) => console.error("Proxy error:", err));
 
-/* --- bare-bones node server --- */
 const server = createServer((req, res) => {
 	if (req.url?.startsWith("/api")) {
 		// Hand the request to Django and return immediately
@@ -24,7 +22,7 @@ const server = createServer((req, res) => {
 		return;
 	}
 
-	// Everything else → SvelteKit handler (SSR / assets)
+	// Everything else pass to SvelteKit
 	handler(req, res, () => {
 		res.writeHead(404, { "Content-Type": "text/plain" });
 		res.end("Not found");

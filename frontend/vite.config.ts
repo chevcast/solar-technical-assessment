@@ -3,7 +3,6 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig(({ mode }) => {
-	// load .env so we can read VITE_API_URL at “vite dev”
 	const { API_URL } = loadEnv(mode, process.cwd(), "");
 
 	return {
@@ -14,12 +13,11 @@ export default defineConfig(({ mode }) => {
 			port: 3000,
 			strictPort: true,
 
-			/** Built-in Vite proxy → Django */
 			proxy: {
 				"/api": {
-					target: API_URL, // e.g. http://localhost:8000
-					changeOrigin: true, // Host header → API host
-					secure: false // allow self-signed certs in dev
+					target: API_URL,
+					changeOrigin: true,
+					secure: false
 				}
 			}
 		},
