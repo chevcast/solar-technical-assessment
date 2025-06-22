@@ -7,7 +7,7 @@
 ```bash
 git clone https://github.com/chevcast/solar-technical-assessment.git
 cp ./frontend/.env.example ./frontend/.env # provide a Google Maps API key
-cp ./backend/.env.example ./backend/.env # provide a Django secret key
+cp ./backend/.env.example ./backend/.env # provide a Django secret key and NREL API key.
 docker compose up
 ```
 

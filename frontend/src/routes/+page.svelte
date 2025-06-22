@@ -13,6 +13,9 @@
 	let optimalValues = $state<{
 		pitch: number;
 		azimuth: number;
+		insolation_kwh_m2: {
+			annual: number;
+		};
 	}>();
 	// State to hold the user-provided offset angle.
 	let offsetAngle = $state<number>(0);
@@ -150,7 +153,7 @@
 		>
 			<h1 class="mb-5 text-center text-lg font-bold md:text-xl">Optimal Panel Mount</h1>
 			<div class="mb-5 flex items-center">
-				<label for="offsetInput" aria-label="Offset Angle" class="mr-4 w-30 text-right"
+				<label for="offsetInput" aria-label="Offset Angle" class="mr-4 w-50 text-right"
 					>Offset Angle</label
 				>
 				<input
@@ -167,13 +170,19 @@
 				{/if}
 			</div>
 			<div class="mb-4 flex items-center">
-				<div class="mr-4 w-30 text-right">Pitch</div>
+				<div class="mr-4 w-50 text-right">Pitch</div>
 				<div class="rounded-lg bg-sky-300 px-2 font-bold text-sky-950">{optimalValues.pitch}</div>
 			</div>
-			<div class="mb-2 flex items-center">
-				<div class="mr-4 w-30 text-right">Azimuth</div>
+			<div class="mb-4 flex items-center">
+				<div class="mr-4 w-50 text-right">Azimuth</div>
 				<div class="rounded-lg bg-sky-300 px-2 font-bold text-sky-950">
 					{optimalValues.azimuth}
+				</div>
+			</div>
+			<div class="flex items-center">
+				<div class="mr-4 w-50 text-right">Insolation Intensity</div>
+				<div class="rounded-lg bg-sky-300 px-2 font-bold text-sky-950">
+					{optimalValues.insolation_kwh_m2.annual} kWh/m²/yr
 				</div>
 			</div>
 		</div>

@@ -8,6 +8,24 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 import json
+import requests, os
+
+NREL_URL = "https://developer.nrel.gov/api/solar/solar_resource/v1.json"
+
+
+def get_nrel_insolation(lat: float, lon: float) -> dict:
+    resp = requests.get(
+        NREL_URL, params=dict(api_key=os.getenv("NREL_API_KEY"), lat=lat, lon=lon)
+    )
+    resp.raise_for_status()
+    dni_block = resp.json()["outputs"]["avg_dni"]
+
+    annual = round(float(dni_block["annual"]), 1)
+
+    # optional: convert all 12 monthly values to float
+    monthly = {m: round(float(v), 1) for m, v in dni_block["monthly"].items()}
+
+    return {"annual": annual, "monthly": monthly}
 
 
 @csrf_exempt
@@ -78,6 +96,8 @@ def calculate_optimal_angles(request):
         noon_idx = solpos_day["zenith"].idxmin()
         azimuth = round(float(solpos_day.loc[noon_idx, "azimuth"]), 2)
 
+        insolation = get_nrel_insolation(lat, lng)
+
         # TODO: Allow specifying tilt calculation mode (seasonal or monthly averages)
         # and accept a date parameter for specific calculations
 
@@ -89,7 +109,13 @@ def calculate_optimal_angles(request):
 
         # TODO: Cache data in Redis based on input parameters to avoid redundant future calculations
 
-        return JsonResponse({"pitch": round(pitch, 2), "azimuth": azimuth})
+        return JsonResponse(
+            {
+                "pitch": round(pitch, 2),
+                "azimuth": azimuth,
+                "insolation_kwh_m2": insolation,
+            }
+        )
 
     except Exception as exc:
         return JsonResponse({"error": str(exc)}, status=400)

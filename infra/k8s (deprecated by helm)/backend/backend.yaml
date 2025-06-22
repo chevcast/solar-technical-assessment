@@ -58,6 +58,11 @@ spec:
                 secretKeyRef:
                   name: backend-secrets
                   key: DJANGO_SECRET_KEY
+            - name: NREL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: NREL_API_KEY
 
           resources:
             requests:
