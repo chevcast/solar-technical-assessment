@@ -149,17 +149,17 @@
 	{#if optimalValues && !coordsDirty}
 		<div
 			transition:slide={{ duration: 300 }}
-			class="z-5 bg-sky-700 p-4 text-xl text-white shadow-lg shadow-sky-950 md:absolute md:top-30 md:right-15 md:w-1/3 md:rounded-2xl md:border-2 md:border-sky-300"
+			class="z-5 bg-sky-700 p-4 text-lg text-white shadow-lg shadow-sky-950 md:absolute md:top-30 md:right-15 md:w-1/3 md:rounded-2xl md:border-2 md:border-sky-300"
 		>
-			<h1 class="mb-5 text-center text-lg font-bold md:text-xl">Optimal Panel Mount</h1>
-			<div class="mb-5 flex items-center">
+			<h1 class="mb-5 text-center text-xl font-bold md:text-2xl">Optimal Panel Mount</h1>
+			<div class="mb-4 flex items-center">
 				<label for="offsetInput" aria-label="Offset Angle" class="mr-4 w-50 text-right"
 					>Offset Angle</label
 				>
 				<input
 					id="offsetInput"
 					class={[
-						"mr-2 w-15 rounded-lg px-2 py-1 text-center text-sky-950 shadow shadow-sky-950",
+						"mr-2 w-15 rounded-lg px-1 text-center text-sky-950 shadow shadow-sky-950",
 						offsetDirty ? "bg-yellow-100" : "bg-white"
 					]}
 					value={offsetAngle}
@@ -169,20 +169,20 @@
 					<LoadingIndicator class="size-8 text-yellow-100" />
 				{/if}
 			</div>
-			<div class="mb-4 flex items-center">
+			<div class="mb-2 flex items-center">
 				<div class="mr-4 w-50 text-right">Pitch</div>
 				<div class="rounded-lg bg-sky-300 px-2 font-bold text-sky-950">{optimalValues.pitch}</div>
 			</div>
-			<div class="mb-4 flex items-center">
+			<div class="mb-2 flex items-center">
 				<div class="mr-4 w-50 text-right">Azimuth</div>
 				<div class="rounded-lg bg-sky-300 px-2 font-bold text-sky-950">
 					{optimalValues.azimuth}
 				</div>
 			</div>
 			<div class="flex items-center">
-				<div class="mr-4 w-50 text-right">Insolation Intensity</div>
+				<div class="mr-4 w-50 text-right">Insolation Intensity Estimate</div>
 				<div class="rounded-lg bg-sky-300 px-2 font-bold text-sky-950">
-					{optimalValues.insolation_kwh_m2.annual} kWh/m²/yr
+					{optimalValues.insolation_kwh_m2.annual * 365} kWh/m²/yr
 				</div>
 			</div>
 		</div>

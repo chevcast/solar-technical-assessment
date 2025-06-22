@@ -3,7 +3,7 @@
 	import { googleLoader } from "$lib/utils/googleLoader";
 
 	// Use two-way bindnig for latLng so this component and its parent can both react to changes.
-	let { latLng = $bindable<google.maps.LatLng>(), azimuth = 0, ...props } = $props();
+	let { latLng = $bindable<google.maps.LatLng>(), azimuth, ...props } = $props();
 
 	let mapDiv: HTMLDivElement;
 
@@ -89,7 +89,7 @@
 
 	// Reactively update the polyline when latLng or azimuth changes.
 	$effect(() => {
-		if (latLng) {
+		if (latLng && azimuth) {
 			updatePolyline();
 		}
 	});
