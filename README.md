@@ -53,6 +53,7 @@ I chose to use `pvlib` because it is actively developed and provides a wide sele
 - Does not simulate PV system performance. It only calculates the optimal tilt and azimuth angles for a fixed-tilt solar array.
 - No caching is implemented. The backend will recompute the optimal angles every time the user selects a new location or offset angle. Adding Redis caching would be a good next step to improve performance.
 - K8s and Helm Charts are provided for deployment, but have not been tested in a production environment. They are intended to serve as a starting point for deployment.
+- Because of time priority, proper form validation is not implemented on the client side. In a proper application we would certainly ensure the user could only supply valid values in our form fields.
 
 ## Modeling Logic
 
